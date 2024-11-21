@@ -1,0 +1,40 @@
+services:
+  symphony-manager:
+    build:
+      context: ./SymphonyManager
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    networks:
+      - symphony-network
+
+  symphony-producer:
+    build:
+      context: ./SymphonyProducer
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    networks:
+      - symphony-network
+
+  rabbitmq:
+    image: "rabbitmq:management"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=symphony
+      - RABBITMQ_DEFAULT_PASS=symphony
+      - RABBITMQ_NODENAME=rabbit@rabbitmq
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - symphony-network
+    restart: always
+
+networks:
+  symphony-network:
+    driver: bridge
+
+volumes:
+  rabbitmq_data:
