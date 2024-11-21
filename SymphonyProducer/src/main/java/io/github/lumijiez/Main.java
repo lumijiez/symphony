@@ -61,12 +61,8 @@ public class Main {
                 System.err.println("Failed to connect to RabbitMQ: " + e.getMessage());
                 System.err.println("Retrying in 5 seconds...");
                 try {
-                    if (connection != null && connection.isOpen()) {
-                        connection.close();
-                    }
-                    if (channel != null && channel.isOpen()) {
-                        channel.close();
-                    }
+                    if (connection != null && connection.isOpen()) connection.close();
+                    if (channel != null && channel.isOpen()) channel.close();
                 } catch (IOException | TimeoutException ignored) {
                 }
 
