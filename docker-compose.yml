@@ -27,7 +27,7 @@ services:
       - RABBITMQ_DEFAULT_PASS=symphony
       - RABBITMQ_NODENAME=rabbit@rabbitmq
     volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+      - ./config/rabbitmq/rabbit.conf:/etc/rabbitmq/rabbitmq.conf:ro
     networks:
       - symphony-network
     restart: always
@@ -35,6 +35,3 @@ services:
 networks:
   symphony-network:
     driver: bridge
-
-volumes:
-  rabbitmq_data:
