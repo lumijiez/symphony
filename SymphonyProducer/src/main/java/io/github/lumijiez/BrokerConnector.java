@@ -49,11 +49,11 @@ public class BrokerConnector {
                 try {
                     String jsonMessage = generateRandomJson();
                     channel.basicPublish("", QUEUE_NAME, null, jsonMessage.getBytes(StandardCharsets.UTF_8));
-                    System.out.println("Sent: " + jsonMessage);
+//                    System.out.println("Sent: " + jsonMessage);
                 } catch (IOException e) {
                     System.err.println("Failed to send message: " + e.getMessage());
                 }
-            }, 0, 10, TimeUnit.SECONDS);
+            }, 0, 1, TimeUnit.NANOSECONDS);
 
             latch.await();
             scheduler.shutdown();

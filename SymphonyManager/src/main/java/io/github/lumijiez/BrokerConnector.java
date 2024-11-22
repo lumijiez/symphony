@@ -42,12 +42,15 @@ public class BrokerConnector {
 
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
                 String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
-                System.out.println("Received: " + message);
+//                System.out.println("Received: " + message);
+
+                channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
             };
 
-            channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> {});
+            channel.basicConsume(QUEUE_NAME, false, deliverCallback, consumerTag -> {});
 
             Thread.currentThread().join();
         }
     }
+
 }
