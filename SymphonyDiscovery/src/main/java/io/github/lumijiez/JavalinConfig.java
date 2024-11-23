@@ -1,8 +1,6 @@
 package io.github.lumijiez;
 
-import com.google.gson.Gson;
 import io.javalin.Javalin;
-import io.javalin.json.JavalinGson;
 import io.javalin.websocket.WsContext;
 
 import java.util.Map;
@@ -18,13 +16,13 @@ public class JavalinConfig {
            ws.onConnect(ctx -> {
                String id = ctx.sessionId();
                users.put(id, ctx);
-               broadcast("Discovery", "Join");
+               broadcast("Discovery-Join", "Join");
            });
 
            ws.onClose(ctx -> {
                String id = ctx.sessionId();
                users.remove(id);
-               broadcast("Discovery", "Leave");
+               broadcast("Discovery-Leave", "Leave");
            });
         });
     }
