@@ -8,7 +8,6 @@ import org.apache.logging.log4j.LogManager;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
-import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CountDownLatch;
@@ -19,10 +18,10 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            logger.info("Node up. - OK");
+            logger.info("Node started");
             EntityManager em = Data.getEntityManager();
 
-            logger.info("Connected to database: << symphony >> - OK");
+            logger.info("Connected to database: << symphony >>");
             em.close();
 
             try (HttpClient client = HttpClient.newHttpClient()) {
@@ -33,7 +32,7 @@ public class Main {
                             public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
                                 try {
                                     int nodeCount = Integer.parseInt(data.toString());
-                                    logger.info("Acknowledged nodes: {} - OK", nodeCount);
+                                    logger.info("Acknowledged nodes: {}", nodeCount);
                                 } catch (NumberFormatException e) {
                                     logger.error("Received invalid node count: {}", data);
                                 }
@@ -42,7 +41,7 @@ public class Main {
 
                             @Override
                             public void onOpen(WebSocket webSocket) {
-                                logger.info("Successfully registered to Discovery - OK");
+                                logger.info("Successfully registered to Discovery");
                                 waitForConnection.countDown();
                                 WebSocket.Listener.super.onOpen(webSocket);
                             }
@@ -66,7 +65,7 @@ public class Main {
                     waitForConnection.await();
                     Thread.currentThread().join();
                 } finally {
-                    ws.sendClose(WebSocket.NORMAL_CLOSURE, "Node shutting down. - OK").join();
+                    ws.sendClose(WebSocket.NORMAL_CLOSURE, "Node shutting down").join();
                 }
             }
 

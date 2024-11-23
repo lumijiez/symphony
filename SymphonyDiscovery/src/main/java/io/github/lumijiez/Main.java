@@ -20,6 +20,6 @@ public class Main {
 
         JavalinConfig.setup(app);
 
-        logger.info("Discovery service up and running. - OK");
+        logger.info("Discovery service up and running");
     }
 }
