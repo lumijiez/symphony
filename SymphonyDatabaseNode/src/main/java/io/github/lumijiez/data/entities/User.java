@@ -1,4 +1,4 @@
-package io.github.lumijiez;
+package io.github.lumijiez.data.entities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

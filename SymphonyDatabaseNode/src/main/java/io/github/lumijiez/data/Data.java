@@ -1,4 +1,4 @@
-package io.github.lumijiez;
+package io.github.lumijiez.data;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
