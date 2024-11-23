@@ -8,6 +8,8 @@ services:
       - "8081:8081"
     networks:
       - symphony-network
+    depends_on:
+      - rabbitmq
 
   symphony-producer:
     container_name: producer
@@ -18,6 +20,8 @@ services:
       - "8082:8082"
     networks:
       - symphony-network
+    depends_on:
+      - rabbitmq
 
   symphony-discovery:
     container_name: discovery
@@ -28,6 +32,8 @@ services:
       - "8083:8083"
     networks:
       - symphony-network
+    depends_on:
+      - postgres_db
 
   symphony-dbnode1:
     container_name: dbnode1
@@ -41,17 +47,17 @@ services:
     depends_on:
       - postgres_db
 
-#  symphony-dbnode2:
-#    container_name: dbnode2
-#    build:
-#      context: ./SymphonyDatabaseNode
-#      dockerfile: Dockerfile
-#    ports:
-#      - "8085:8085"
-#    networks:
-#      - symphony-network
-#    depends_on:
-#      - postgres_db
+  symphony-dbnode2:
+    container_name: dbnode2
+    build:
+      context: ./SymphonyDatabaseNode
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
+    networks:
+      - symphony-network
+    depends_on:
+      - postgres_db
 
   postgres_db:
     image: postgres:latest
@@ -60,6 +66,7 @@ services:
       - POSTGRES_USER=symphony
       - POSTGRES_PASSWORD=symphony
       - POSTGRES_DB=symphony
+      - POSTGRES_INITDB_ARGS="--log-min-messages=error"
     volumes:
       - ./config/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
@@ -86,6 +93,7 @@ services:
       - RABBITMQ_PROMETHEUS_RETENTION_POLICY=1h
     volumes:
       - ./config/rabbitmq/rabbit.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./config/logs/rabbitmq:/var/log/rabbitmq
     networks:
       - symphony-network
     restart: always
