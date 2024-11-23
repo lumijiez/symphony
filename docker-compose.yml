@@ -19,6 +19,16 @@ services:
     networks:
       - symphony-network
 
+  symphony-discovery:
+    container_name: discovery
+    build:
+      context: ./SymphonyDiscovery
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    networks:
+      - symphony-network
+
   rabbitmq:
     image: "rabbitmq:management"
     container_name: rabbitmq
