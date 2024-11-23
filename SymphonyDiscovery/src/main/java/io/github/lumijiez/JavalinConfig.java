@@ -3,16 +3,17 @@ package io.github.lumijiez;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsContext;
 
+import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class JavalinConfig {
     private static final Map<String, WsContext> users = new ConcurrentHashMap<>();
+    private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
-    public static void setup(Javalin app) {
-        app.get("/check", ctx -> ctx.result("OK"));
-
-        app.ws("/discovery", ws -> {
+    public static void setup(Javalin app) {        app.ws("/discovery", ws -> {
            ws.onConnect(ctx -> {
                String id = ctx.sessionId();
                users.put(id, ctx);

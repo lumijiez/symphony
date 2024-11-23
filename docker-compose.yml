@@ -107,7 +107,6 @@ services:
       - POSTGRES_USER=symphony
       - POSTGRES_PASSWORD=symphony
       - POSTGRES_DB=symphony
-      - POSTGRES_INITDB_ARGS="--log-min-messages=error"
     volumes:
       - ./config/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
