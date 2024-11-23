@@ -29,6 +29,26 @@ services:
     networks:
       - symphony-network
 
+  symphony-dbnode1:
+    container_name: dbnode1
+    build:
+      context: ./SymphonyDatabaseNode
+      dockerfile: Dockerfile
+    ports:
+      - "8084:8084"
+    networks:
+      - symphony-network
+
+  symphony-dbnode2:
+    container_name: dbnode2
+    build:
+      context: ./SymphonyDatabaseNode
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
+    networks:
+      - symphony-network
+
   rabbitmq:
     image: "rabbitmq:management"
     container_name: rabbitmq

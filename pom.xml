@@ -14,6 +14,7 @@
         <module>SymphonyManager</module>
         <module>SymphonyProducer</module>
         <module>SymphonyDiscovery</module>
+        <module>SymphonyDatabaseNode</module>
     </modules>
 
     <dependencies>
