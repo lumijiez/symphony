@@ -35,6 +35,14 @@ services:
     depends_on:
       - postgres_db
 
+  symphony-smtp:
+    container_name: smtp
+    build:
+      context: ./SymphonySMTP
+      dockerfile: Dockerfile
+    ports:
+      - "8090:8090"
+
   symphony-dbnode1:
     container_name: node1
     build:

@@ -19,6 +19,6 @@ WORKDIR /app
 
 COPY --from=build /app/target/SymphonyDiscovery-1.0-SNAPSHOT.jar /app/SymphonyDiscovery.jar
 
-EXPOSE 8081
+EXPOSE 8083
 
 ENTRYPOINT ["java", "-jar", "SymphonyDiscovery.jar"]

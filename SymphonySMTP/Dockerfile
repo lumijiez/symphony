@@ -17,8 +17,8 @@ FROM openjdk:21
 
 WORKDIR /app
 
-COPY --from=build /app/target/SymphonyDatabaseNode-1.0-SNAPSHOT.jar /app/SymphonyDatabaseNode.jar
+COPY --from=build /app/target/SymphonySMTP-1.0-SNAPSHOT.jar /app/SymphonySMTP.jar
 
-EXPOSE 8100
+EXPOSE 8090
 
-ENTRYPOINT ["java", "-jar", "SymphonyDatabaseNode.jar"]
+ENTRYPOINT ["java", "-jar", "SymphonySMTP.jar"]
