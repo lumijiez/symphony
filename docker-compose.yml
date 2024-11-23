@@ -22,6 +22,10 @@ services:
   rabbitmq:
     image: "rabbitmq:management"
     container_name: rabbitmq
+    command: >
+      sh -c "
+      rabbitmq-plugins enable --offline rabbitmq_prometheus &&
+      rabbitmq-server"
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -31,10 +35,6 @@ services:
       - RABBITMQ_DEFAULT_PASS=symphony
       - RABBITMQ_NODENAME=rabbit@rabbitmq
       - RABBITMQ_PROMETHEUS_RETENTION_POLICY=1h
-    command: >
-      sh -c "
-      rabbitmq-plugins enable --offline rabbitmq_prometheus &&
-      rabbitmq-server"
     volumes:
       - ./config/rabbitmq/rabbit.conf:/etc/rabbitmq/rabbitmq.conf:ro
     networks:
@@ -44,6 +44,9 @@ services:
   prometheus:
     image: prom/prometheus
     container_name: prometheus
+    command:
+      - "--log.level=warn"
+      - "--config.file=/etc/prometheus/prometheus.yml"
     ports:
       - "9090:9090"
     volumes:
@@ -54,31 +57,45 @@ services:
   grafana:
     image: grafana/grafana
     container_name: grafana
+    user: "472:472"
     ports:
       - "3000:3000"
-    volumes:
-      - ./config/grafana/provisioning:/etc/grafana/provisioning
-      - ./config/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
     environment:
       - GF_SECURITY_ADMIN_USER=symphony
       - GF_SECURITY_ADMIN_PASSWORD=symphony
+      - GF_LOG_LEVEL=warn
+      - GF_DATABASE_TYPE=sqlite3
+      - GF_DATABASE_PATH=/var/lib/grafana/grafana.db
+    volumes:
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
+      - ./config/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./config/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./config/grafana/provisioning/plugins:/etc/grafana/provisioning/plugins
+      - ./config/grafana/provisioning/alerting:/etc/grafana/provisioning/alerting
+      - ./config/grafana/plugins-bundled:/usr/share/grafana/plugins-bundled
+      - grafana-storage:/var/lib/grafana
     networks:
       - symphony-network
 
   node-exporter:
     image: prom/node-exporter:latest
     container_name: node-exporter
-    ports:
-      - "9100:9100"
     command:
       - "--no-collector.hwmon"
+      - "--log.level=warn"
+    ports:
+      - "9100:9100"
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /:/rootfs:ro
-    restart: always
+      - /run/udev:/run/udev:ro
     networks:
       - symphony-network
+    restart: always
+
+volumes:
+  grafana-storage:
 
 networks:
   symphony-network:

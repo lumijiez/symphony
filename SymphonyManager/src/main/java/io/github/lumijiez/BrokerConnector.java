@@ -37,7 +37,7 @@ public class BrokerConnector {
              Channel channel = connection.createChannel()) {
 
             channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-            System.out.println("Waiting for messages. To exit press CTRL+C");
+            System.out.println("Connected to RabbitMQ and queue declared.");
 
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
                 // String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
