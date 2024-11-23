@@ -7,7 +7,6 @@ public class Main {
         Javalin app = Javalin.create().start(8083);
         JavalinConfig.setup(app);
 
-
         System.out.print("Discovery service up and running");
     }
 }

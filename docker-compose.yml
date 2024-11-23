@@ -36,12 +36,12 @@ services:
       - postgres_db
 
   symphony-dbnode1:
-    container_name: dbnode1
+    container_name: node1
     build:
       context: ./SymphonyDatabaseNode
       dockerfile: Dockerfile
     ports:
-      - "8084:8084"
+      - "8100:8100"
     networks:
       - symphony-network
     depends_on:
@@ -49,12 +49,51 @@ services:
       - symphony-discovery
 
   symphony-dbnode2:
-    container_name: dbnode2
+    container_name: node2
     build:
       context: ./SymphonyDatabaseNode
       dockerfile: Dockerfile
     ports:
-      - "8085:8085"
+      - "8101:8101"
+    networks:
+      - symphony-network
+    depends_on:
+      - postgres_db
+      - symphony-discovery
+
+  symphony-dbnode3:
+    container_name: node3
+    build:
+      context: ./SymphonyDatabaseNode
+      dockerfile: Dockerfile
+    ports:
+      - "8102:8102"
+    networks:
+      - symphony-network
+    depends_on:
+      - postgres_db
+      - symphony-discovery
+
+  symphony-dbnode4:
+    container_name: node4
+    build:
+      context: ./SymphonyDatabaseNode
+      dockerfile: Dockerfile
+    ports:
+      - "8103:8103"
+    networks:
+      - symphony-network
+    depends_on:
+      - postgres_db
+      - symphony-discovery
+
+  symphony-dbnode5:
+    container_name: node5
+    build:
+      context: ./SymphonyDatabaseNode
+      dockerfile: Dockerfile
+    ports:
+      - "8104:8104"
     networks:
       - symphony-network
     depends_on:

@@ -9,6 +9,9 @@
     </Appenders>
 
     <Loggers>
+        <Logger name="io.javalin" level="off" additivity="false"/>
+        <Logger name="org.eclipse" level="off" additivity="false"/>
+
         <Root level="info">
             <AppenderRef ref="Console"/>
         </Root>
