@@ -4,8 +4,9 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -17,6 +18,7 @@ public class BrokerConnector {
     private static final String RABBITMQ_USER = "symphony";
     private static final String RABBITMQ_PASSWORD = "symphony";
     private static final CountDownLatch shutdownLatch = new CountDownLatch(1);
+    private static final Logger logger = LogManager.getLogger(BrokerConnector.class);
 
     public static void connect() {
         try (ScheduledExecutorService reconnectExecutor = Executors.newSingleThreadScheduledExecutor()) {
@@ -24,14 +26,14 @@ public class BrokerConnector {
                 try {
                     connectToRabbitMQ();
                 } catch (Exception e) {
-                    System.err.println("Awaiting broker connection: " + e.getMessage());
+                    logger.error("Awaiting broker connection: {}", e.getMessage());
                 }
             }, 0, 5, TimeUnit.SECONDS);
 
             shutdownLatch.await();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            System.err.println("Connector interrupted: " + e.getMessage());
+            logger.error("Connector interrupted: {}", e.getMessage());
         }
     }
 
@@ -45,7 +47,7 @@ public class BrokerConnector {
              Channel channel = connection.createChannel()) {
 
             channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-            System.out.println("Connected to RabbitMQ and queue declared.");
+            logger.info("Connected to RabbitMQ and queue declared.");
 
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
                 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);

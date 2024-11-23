@@ -13,23 +13,26 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class BrokerConnector {
     private static final String QUEUE_NAME = "random_json_queue";
     private static final String RABBITMQ_HOST = "rabbitmq";
     private static final String RABBITMQ_USER = "symphony";
     private static final String RABBITMQ_PASSWORD = "symphony";
+    private static final Logger logger = LogManager.getLogger(BrokerConnector.class);
 
     public static void connect() {
         CountDownLatch latch = new CountDownLatch(1);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("Shutdown signal received.");
+            logger.info("Shutdown signal received.");
             latch.countDown();
         }));
 
         boolean success = connectToRabbitMQ(latch);
-        System.out.println("Success: " + success);
+        logger.info("Success: {}", success);
     }
 
     private static boolean connectToRabbitMQ(CountDownLatch latch) {
@@ -43,7 +46,7 @@ public class BrokerConnector {
              ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor()) {
 
             channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-            System.out.println("Connected to RabbitMQ and queue declared.");
+            logger.info("Connected to RabbitMQ and queue declared.");
 
             scheduler.scheduleAtFixedRate(() -> {
                 try {
@@ -51,7 +54,7 @@ public class BrokerConnector {
                     channel.basicPublish("", QUEUE_NAME, null, jsonMessage.getBytes(StandardCharsets.UTF_8));
 //                    System.out.println("Sent: " + jsonMessage);
                 } catch (IOException e) {
-                    System.err.println("Failed to send message: " + e.getMessage());
+                    logger.error("Failed to send message: {}", e.getMessage());
                 }
             }, 0, 1, TimeUnit.SECONDS);
 
@@ -60,7 +63,7 @@ public class BrokerConnector {
 
             return scheduler.awaitTermination(5, TimeUnit.SECONDS);
         } catch (Exception e) {
-            System.err.println("Awaiting broker connection: " + e.getMessage());
+            logger.info("Awaiting broker connection: {}", e.getMessage());
             try {
                 Thread.sleep(5000);
                 connectToRabbitMQ(latch);

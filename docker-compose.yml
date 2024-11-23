@@ -46,6 +46,7 @@ services:
       - symphony-network
     depends_on:
       - postgres_db
+      - symphony-discovery
 
   symphony-dbnode2:
     container_name: dbnode2
@@ -58,6 +59,7 @@ services:
       - symphony-network
     depends_on:
       - postgres_db
+      - symphony-discovery
 
   postgres_db:
     image: postgres:latest
