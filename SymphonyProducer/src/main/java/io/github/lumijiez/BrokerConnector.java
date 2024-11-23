@@ -27,12 +27,12 @@ public class BrokerConnector {
         CountDownLatch latch = new CountDownLatch(1);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("Shutdown signal received.");
+            logger.info("Shutdown signal received. - OK");
             latch.countDown();
         }));
 
         boolean success = connectToRabbitMQ(latch);
-        logger.info("Success: {}", success);
+        logger.info("Success: {} - OK", success);
     }
 
     private static boolean connectToRabbitMQ(CountDownLatch latch) {
@@ -46,7 +46,7 @@ public class BrokerConnector {
              ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor()) {
 
             channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-            logger.info("Connected to RabbitMQ and queue declared.");
+            logger.info("Connected to RabbitMQ and queue declared. - OK");
 
             scheduler.scheduleAtFixedRate(() -> {
                 try {
@@ -63,7 +63,7 @@ public class BrokerConnector {
 
             return scheduler.awaitTermination(5, TimeUnit.SECONDS);
         } catch (Exception e) {
-            logger.info("Awaiting broker connection: {}", e.getMessage());
+            logger.error("Awaiting broker connection: {}", e.getMessage());
             try {
                 Thread.sleep(5000);
                 connectToRabbitMQ(latch);

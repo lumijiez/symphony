@@ -47,7 +47,7 @@ public class BrokerConnector {
              Channel channel = connection.createChannel()) {
 
             channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-            logger.info("Connected to RabbitMQ and queue declared.");
+            logger.info("Connected to RabbitMQ and queue declared. - OK");
 
             DeliverCallback deliverCallback = (consumerTag, delivery) -> channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 

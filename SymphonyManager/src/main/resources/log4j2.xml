@@ -3,7 +3,9 @@
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout>
-                <Pattern>%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level: %msg%n</Pattern>
+                <Pattern>
+                    %highlight{%d{yyyy-MM-dd HH:mm:ss} %-5level [%t]: %msg}{FATAL=red, ERROR=red, WARN=yellow, INFO=green, DEBUG=blue}%n
+                </Pattern>
             </PatternLayout>
         </Console>
     </Appenders>

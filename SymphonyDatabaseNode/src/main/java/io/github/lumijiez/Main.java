@@ -19,10 +19,10 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            logger.info("Node up.");
+            logger.info("Node up. - OK");
             EntityManager em = Data.getEntityManager();
 
-            logger.info("Connected to database: << symphony >>");
+            logger.info("Connected to database: << symphony >> - OK");
             em.close();
 
             try (HttpClient client = HttpClient.newHttpClient()) {
@@ -33,7 +33,7 @@ public class Main {
                             public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
                                 try {
                                     int nodeCount = Integer.parseInt(data.toString());
-                                    logger.info("Acknowledged system nodes: {}", nodeCount);
+                                    logger.info("Acknowledged nodes: {} - OK", nodeCount);
                                 } catch (NumberFormatException e) {
                                     logger.error("Received invalid node count: {}", data);
                                 }
@@ -42,7 +42,7 @@ public class Main {
 
                             @Override
                             public void onOpen(WebSocket webSocket) {
-                                logger.info("Successfully registered to Discovery");
+                                logger.info("Successfully registered to Discovery - OK");
                                 waitForConnection.countDown();
                                 WebSocket.Listener.super.onOpen(webSocket);
                             }
@@ -66,7 +66,7 @@ public class Main {
                     waitForConnection.await();
                     Thread.currentThread().join();
                 } finally {
-                    ws.sendClose(WebSocket.NORMAL_CLOSURE, "Node shutting down").join();
+                    ws.sendClose(WebSocket.NORMAL_CLOSURE, "Node shutting down. - OK").join();
                 }
             }
 

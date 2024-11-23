@@ -11,9 +11,9 @@ import java.util.concurrent.ScheduledExecutorService;
 
 public class JavalinConfig {
     private static final Map<String, WsContext> users = new ConcurrentHashMap<>();
-    private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
-    public static void setup(Javalin app) {        app.ws("/discovery", ws -> {
+    public static void setup(Javalin app) {
+        app.ws("/discovery", ws -> {
            ws.onConnect(ctx -> {
                String id = ctx.sessionId();
                users.put(id, ctx);
