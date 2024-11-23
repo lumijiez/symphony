@@ -58,8 +58,4 @@ public class BrokerConnector {
             shutdownLatch.await();
         }
     }
-
-    public static void shutdown() {
-        shutdownLatch.countDown();
-    }
 }
