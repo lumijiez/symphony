@@ -53,7 +53,7 @@ public class BrokerConnector {
                 } catch (IOException e) {
                     System.err.println("Failed to send message: " + e.getMessage());
                 }
-            }, 0, 1, TimeUnit.NANOSECONDS);
+            }, 0, 1, TimeUnit.SECONDS);
 
             latch.await();
             scheduler.shutdown();
