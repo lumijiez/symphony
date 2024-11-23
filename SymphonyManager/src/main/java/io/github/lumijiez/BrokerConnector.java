@@ -48,8 +48,6 @@ public class BrokerConnector {
             System.out.println("Connected to RabbitMQ and queue declared.");
 
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-                System.out.println(new String(delivery.getBody(), StandardCharsets.UTF_8));
-
                 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
             };
 

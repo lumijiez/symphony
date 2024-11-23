@@ -38,16 +38,35 @@ services:
       - "8084:8084"
     networks:
       - symphony-network
+    depends_on:
+      - postgres_db
 
-  symphony-dbnode2:
-    container_name: dbnode2
-    build:
-      context: ./SymphonyDatabaseNode
-      dockerfile: Dockerfile
+#  symphony-dbnode2:
+#    container_name: dbnode2
+#    build:
+#      context: ./SymphonyDatabaseNode
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8085:8085"
+#    networks:
+#      - symphony-network
+#    depends_on:
+#      - postgres_db
+
+  postgres_db:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      - POSTGRES_USER=symphony
+      - POSTGRES_PASSWORD=symphony
+      - POSTGRES_DB=symphony
+    volumes:
+      - ./config/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - "8085:8085"
+      - "5432:5432"
     networks:
       - symphony-network
+    restart: always
 
   rabbitmq:
     image: "rabbitmq:management"
