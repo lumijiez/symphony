@@ -3,6 +3,8 @@ package io.github.lumijiez;
 import com.google.gson.Gson;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +15,7 @@ public class JavalinConfig {
     private static final Map<String, NodeInfo> registeredNodes = new ConcurrentHashMap<>();
     private static final Map<String, WsContext> nodes = new ConcurrentHashMap<>();
     private static final Gson gson = new Gson();
+    private static final Logger logger = LogManager.getLogger(JavalinConfig.class);
 
     public static void setup(Javalin app) {
         app.ws("/discovery", ws -> {

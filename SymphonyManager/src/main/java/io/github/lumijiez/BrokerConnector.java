@@ -26,7 +26,7 @@ public class BrokerConnector {
                 try {
                     connectToRabbitMQ();
                 } catch (Exception e) {
-                    logger.error("Awaiting broker connection: {}", e.getMessage());
+                    logger.warn("Awaiting broker connection: {}", e.getMessage());
                 }
             }, 0, 5, TimeUnit.SECONDS);
 

@@ -63,7 +63,7 @@ public class BrokerConnector {
 
             return scheduler.awaitTermination(5, TimeUnit.SECONDS);
         } catch (Exception e) {
-            logger.error("Awaiting broker connection: {}", e.getMessage());
+            logger.warn("Awaiting broker connection: {}", e.getMessage());
             try {
                 Thread.sleep(5000);
                 connectToRabbitMQ(latch);
