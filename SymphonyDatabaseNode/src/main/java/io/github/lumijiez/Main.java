@@ -57,7 +57,7 @@ public class Main {
                                         if (!knownNodes.contains(newNode)) {
                                             knownNodes.add(newNode);
                                             nodeCount++;
-                                            sendUdpSignal(newNode, udpPort);
+                                            sendUdpSignal(newNode);
                                         }
                                     }
 
@@ -105,7 +105,7 @@ public class Main {
         }
     }
 
-    private static void sendUdpSignal(NodeInfo node, int udpPort) {
+    private static void sendUdpSignal(NodeInfo node) {
         try (DatagramChannel channel = DatagramChannel.open()) {
             channel.configureBlocking(false);
             String message = String.valueOf(nodeCount);
