@@ -52,6 +52,9 @@ services:
       - "8100:8100"
     networks:
       - symphony-network
+    environment:
+      - HOSTNAME=node1
+      - PORT=8100
     depends_on:
       - postgres_db
       - symphony-discovery
@@ -65,6 +68,9 @@ services:
       - "8101:8101"
     networks:
       - symphony-network
+    environment:
+      - HOSTNAME=node2
+      - PORT=8101
     depends_on:
       - postgres_db
       - symphony-discovery
@@ -78,6 +84,9 @@ services:
       - "8102:8102"
     networks:
       - symphony-network
+    environment:
+      - HOSTNAME=node3
+      - PORT=8102
     depends_on:
       - postgres_db
       - symphony-discovery
@@ -91,6 +100,9 @@ services:
       - "8103:8103"
     networks:
       - symphony-network
+    environment:
+      - HOSTNAME=node4
+      - PORT=8103
     depends_on:
       - postgres_db
       - symphony-discovery
@@ -104,6 +116,9 @@ services:
       - "8104:8104"
     networks:
       - symphony-network
+    environment:
+      - HOSTNAME=node5
+      - PORT=8104
     depends_on:
       - postgres_db
       - symphony-discovery
