@@ -111,7 +111,7 @@ public class Main {
             String message = String.valueOf(nodeCount);
             ByteBuffer buffer = ByteBuffer.wrap(message.getBytes());
             channel.send(buffer, new InetSocketAddress(node.hostname(), node.port()));
-            logger.info("Sent UDP to: \033[1m{}, message: \u001B[33m\033[1m{}", node.hostname(), message);
+            logger.info("Sent UDP: \033[1m{}, message: \u001B[33m\033[1m{}", node.hostname() + ":" + node.port(), message);
         } catch (IOException e) {
             logger.error("Error sending UDP signal: {}", e.getMessage());
         }
@@ -126,7 +126,7 @@ public class Main {
                 channel.configureBlocking(false);
                 channel.register(selector, SelectionKey.OP_READ);
 
-                logger.info("UDP listener started on port \033[1m{}", udpPort);
+                logger.info("UDP listens on port \033[1m{}", udpPort);
                 ByteBuffer buffer = ByteBuffer.allocate(1024);
 
                 while (!Thread.currentThread().isInterrupted()) {
@@ -144,7 +144,7 @@ public class Main {
                             buffer.flip();
 
                             String message = new String(buffer.array(), 0, buffer.limit()).trim();
-                            logger.info("Received UDP from \033[1m{}:{}: \u001B[33m\033[1m{}",
+                            logger.info("Received UDP: \033[1m{}:{}: \u001B[33m\033[1m{}",
                                     sender.getHostName(),
                                     sender.getPort(),
                                     message);
