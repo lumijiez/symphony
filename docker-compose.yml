@@ -43,82 +43,92 @@ services:
     ports:
       - "8090:8090"
 
-  symphony-dbnode1:
+  node1:
     container_name: node1
     build:
       context: ./SymphonyDatabaseNode
       dockerfile: Dockerfile
     ports:
       - "8100:8100"
+      - "8105:8105/udp"
     networks:
       - symphony-network
     environment:
       - HOSTNAME=node1
       - PORT=8100
+      - UDP_PORT=8105
     depends_on:
       - postgres_db
       - symphony-discovery
 
-  symphony-dbnode2:
+  node2:
     container_name: node2
     build:
       context: ./SymphonyDatabaseNode
       dockerfile: Dockerfile
     ports:
       - "8101:8101"
+      - "8106:8106/udp"
     networks:
       - symphony-network
     environment:
       - HOSTNAME=node2
       - PORT=8101
+      - UDP_PORT=8106
     depends_on:
       - postgres_db
       - symphony-discovery
 
-  symphony-dbnode3:
+  node3:
     container_name: node3
     build:
       context: ./SymphonyDatabaseNode
       dockerfile: Dockerfile
     ports:
       - "8102:8102"
+      - "8107:8107/udp"
     networks:
       - symphony-network
     environment:
       - HOSTNAME=node3
       - PORT=8102
+      - UDP_PORT=8107
     depends_on:
       - postgres_db
       - symphony-discovery
 
-  symphony-dbnode4:
+  node4:
     container_name: node4
     build:
       context: ./SymphonyDatabaseNode
       dockerfile: Dockerfile
     ports:
       - "8103:8103"
+      - "8108:8108/udp"
     networks:
       - symphony-network
     environment:
       - HOSTNAME=node4
       - PORT=8103
+      - UDP_PORT=8108
     depends_on:
       - postgres_db
       - symphony-discovery
 
-  symphony-dbnode5:
+  node5:
     container_name: node5
     build:
       context: ./SymphonyDatabaseNode
       dockerfile: Dockerfile
     ports:
       - "8104:8104"
+      - "8109:8109/udp"
     networks:
       - symphony-network
     environment:
       - HOSTNAME=node5
       - PORT=8104
+      - UDP_PORT=8109
     depends_on:
       - postgres_db
       - symphony-discovery
