@@ -41,7 +41,6 @@ public class WebSocketManager {
 
                                 for (NodeInfo newNode : nodes) {
                                     nodeManager.registerNode(newNode);
-//                                    logger.info("Discovered node: {}:{}", newNode.hostname(), newNode.port());
                                 }
 
                             } catch (Exception e) {
@@ -77,12 +76,6 @@ public class WebSocketManager {
 
         } catch (Exception e) {
             logger.error("Error in WebSocketManager: {}", e.getMessage());
-        }
-    }
-
-    public void send(NodeInfo nodeInfo) {
-        if (webSocket != null) {
-            webSocket.sendText(gson.toJson(nodeInfo), true);
         }
     }
 }

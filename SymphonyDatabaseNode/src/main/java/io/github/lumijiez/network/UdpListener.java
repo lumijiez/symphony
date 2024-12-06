@@ -48,7 +48,7 @@ public class UdpListener {
                             buffer.flip();
 
                             String message = new String(buffer.array(), 0, buffer.limit()).trim();
-                            logger.info("Received UDP {}:{}: {}", sender.getHostName(), sender.getPort(), message);
+                          //  logger.info("Received UDP {}:{}: {}", sender.getHostName(), sender.getPort(), message);
                             nodeManager.handleMessage(message);
                         }
                     }

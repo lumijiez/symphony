@@ -23,13 +23,9 @@ public class UdpMessageSender {
             channel.configureBlocking(false);
             ByteBuffer buffer = ByteBuffer.wrap(message.getBytes());
             channel.send(buffer, new InetSocketAddress(node.hostname(), node.port()));
-            logger.info("Sent UDP to {}:{}: {}", node.hostname(), node.port(), message);
+          //  logger.info("Sent UDP to {}:{}: {}", node.hostname(), node.port(), message);
         } catch (IOException e) {
             logger.error("Error sending UDP message: {}", e.getMessage());
         }
-    }
-
-    public void sendCountMessage(NodeInfo node, int count) {
-        sendMessage(node, String.valueOf(count));
     }
 }
