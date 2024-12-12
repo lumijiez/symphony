@@ -207,8 +207,24 @@ services:
       - symphony-network
     restart: always
 
+  ftp_server:
+    image: stilliard/pure-ftpd:hardened
+    container_name: ftp_server
+    ports:
+      - "21:21"
+      - "30000-30009:30000-30009"
+    environment:
+      FTP_USER_NAME: symphony
+      FTP_USER_PASS: symphony
+      FTP_USER_HOME: /home/symphony
+    networks:
+      - symphony-network
+    volumes:
+      - ftp_data:/home/symphony
+
 volumes:
   grafana-storage:
+  ftp_data:
 
 networks:
   symphony-network:

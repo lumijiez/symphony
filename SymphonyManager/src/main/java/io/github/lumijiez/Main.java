@@ -12,6 +12,8 @@ public class Main {
     public static void main(String[] args) {
         new Thread(BrokerConnector::connect, "RabbitMQ-Connection").start();
 
+        new Thread(FTPFetcher::new, "FTP-Fetcher").start();
+
         Javalin app = Javalin.create(config -> {
             config.jsonMapper(new JavalinGson());
             config.jetty.modifyWebSocketServletFactory(wsFactoryConfig -> {
