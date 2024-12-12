@@ -135,7 +135,7 @@ public class Raft {
 
             String jsonBody = String.format(
                     "{\"leaderHost\": \"%s\", \"leaderPort\": %d}",
-                    selfAddress.split(":")[0], selfPort
+                    selfAddress.split(":")[0], Main.HTTP_PORT
             );
 
             try (OutputStream os = connection.getOutputStream()) {

@@ -1,23 +1,21 @@
 package io.github.lumijiez;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import static io.github.lumijiez.Main.logger;
 
 public class AddressHolder {
     private String host;
     private int port;
 
     private static AddressHolder INSTANCE;
-
-    private AddressHolder() {
-//        Timer timer = new Timer(true);
-//        timer.scheduleAtFixedRate(new TimerTask() {
-//            @Override
-//            public void run() {
-//                Main.logger.info("Host: {}, Port: {}", host, port);
-//            }
-//        }, 0, 1000);
-    }
 
     public static AddressHolder getInstance() {
         if (INSTANCE == null) {

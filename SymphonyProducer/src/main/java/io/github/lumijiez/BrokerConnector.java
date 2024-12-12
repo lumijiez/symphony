@@ -8,6 +8,8 @@ import com.rabbitmq.client.ConnectionFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -17,7 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class BrokerConnector {
-    private static final String QUEUE_NAME = "random_json_queue";
+    private static final String QUEUE_NAME = "random_sha";
     private static final String RABBITMQ_HOST = "rabbitmq";
     private static final String RABBITMQ_USER = "symphony";
     private static final String RABBITMQ_PASSWORD = "symphony";
@@ -50,9 +52,9 @@ public class BrokerConnector {
 
             scheduler.scheduleAtFixedRate(() -> {
                 try {
-                    String jsonMessage = generateRandomJson();
+                    String jsonMessage = generateRandomSHA256();
                     channel.basicPublish("", QUEUE_NAME, null, jsonMessage.getBytes(StandardCharsets.UTF_8));
-//                    System.out.println("Sent: " + jsonMessage);
+                    System.out.println("Sent: " + jsonMessage);
                 } catch (IOException e) {
                     logger.error("Failed to send message: {}", e.getMessage());
                 }
@@ -74,13 +76,26 @@ public class BrokerConnector {
         return false;
     }
 
-    private static String generateRandomJson() {
-        Random random = new Random();
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.add("id", new JsonPrimitive(random.nextInt(1000)));
-        jsonObject.add("name", new JsonPrimitive("Item_" + random.nextInt(100)));
-        jsonObject.add("value", new JsonPrimitive(random.nextDouble() * 100));
+    private static String generateRandomSHA256() {
+        try {
+            Random random = new Random();
+            byte[] randomBytes = new byte[32];
+            random.nextBytes(randomBytes);
 
-        return jsonObject.toString();
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(randomBytes);
+
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not available", e);
+        }
     }
 }
