@@ -1,16 +1,5 @@
 package io.github.lumijiez;
 
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import static io.github.lumijiez.Main.logger;
-
 public class AddressHolder {
     private String host;
     private int port;

@@ -15,8 +15,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static io.github.lumijiez.Main.logger;
-
 public class BrokerConnector {
     private static final String QUEUE_NAME = "random_sha";
     private static final String RABBITMQ_HOST = "rabbitmq";

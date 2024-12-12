@@ -1,7 +1,5 @@
 package io.github.lumijiez;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
