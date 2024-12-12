@@ -13,7 +13,6 @@
     <modules>
         <module>SymphonyManager</module>
         <module>SymphonyProducer</module>
-        <module>SymphonyDiscovery</module>
         <module>SymphonyDatabaseNode</module>
         <module>SymphonySMTP</module>
     </modules>

@@ -1,6 +1,5 @@
 package io.github.lumijiez.network;
 
-import io.github.lumijiez.app.NodeManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -11,26 +10,31 @@ import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.Iterator;
+import java.util.function.Consumer;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 public class UdpListener {
     private static final Logger logger = LogManager.getLogger(UdpListener.class);
+    private final int port;
+    private final Consumer<JsonMessage> messageHandler;
+    private final Gson gson = new Gson();
 
-    private final NodeManager nodeManager;
-
-    public UdpListener(NodeManager nodeManager) {
-        this.nodeManager = nodeManager;
+    public UdpListener(int port, Consumer<JsonMessage> messageHandler) {
+        this.port = port;
+        this.messageHandler = messageHandler;
     }
 
     public void startListening() {
-        Thread udpListenerThread = new Thread(() -> {
+        Thread listenerThread = new Thread(() -> {
             try (Selector selector = Selector.open();
                  DatagramChannel channel = DatagramChannel.open()) {
 
-                channel.bind(new InetSocketAddress(NodeManager.PORT));
+                channel.bind(new InetSocketAddress(port));
                 channel.configureBlocking(false);
                 channel.register(selector, SelectionKey.OP_READ);
 
-                logger.info("UDP listens on port {}", NodeManager.PORT);
+                logger.info("Listening for UDP messages on port {}", port);
                 ByteBuffer buffer = ByteBuffer.allocate(1024);
 
                 while (!Thread.currentThread().isInterrupted()) {
@@ -48,15 +52,37 @@ public class UdpListener {
                             buffer.flip();
 
                             String message = new String(buffer.array(), 0, buffer.limit()).trim();
-                          //  logger.info("Received UDP {}:{}: {}", sender.getHostName(), sender.getPort(), message);
-                            nodeManager.handleMessage(message);
+                            logger.info("Received message from {}:{} - {}", sender.getHostName(), sender.getPort(), message);
+                            try {
+                                JsonMessage jsonMessage = gson.fromJson(message, JsonMessage.class);
+                                messageHandler.accept(jsonMessage);
+                            } catch (JsonSyntaxException e) {
+                                logger.error("Invalid JSON received: {}", message, e);
+                            }
                         }
                     }
                 }
             } catch (IOException e) {
-                logger.error("Error in UDP listener: {}", e.getMessage());
+                logger.error("Error in UDP listener: {}", e.getMessage(), e);
             }
         });
-        udpListenerThread.start();
+
+        listenerThread.start();
+    }
+
+    public static class JsonMessage {
+        public String type;
+        public int term;
+        public String sender;
+        public String additionalData;
+
+        public JsonMessage() {}
+
+        public JsonMessage(String type, int term, String sender, String additionalData) {
+            this.type = type;
+            this.term = term;
+            this.sender = sender;
+            this.additionalData = additionalData;
+        }
     }
 }

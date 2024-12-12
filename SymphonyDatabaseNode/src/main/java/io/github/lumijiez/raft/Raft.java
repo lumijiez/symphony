@@ -1,177 +1,234 @@
 package io.github.lumijiez.raft;
 
-import io.github.lumijiez.app.NodeManager;
-import io.github.lumijiez.data.models.NodeInfo;
-import io.github.lumijiez.network.UdpMessageSender;
+import com.google.gson.Gson;
+import io.github.lumijiez.Main;
+import io.github.lumijiez.network.UdpListener;
+import io.github.lumijiez.network.UdpSender;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.*;
 
 public class Raft {
-    private static final Random RANDOM = new Random();
-    private final Logger logger = LogManager.getLogger(Raft.class);
+    private static final Logger logger = LogManager.getLogger(Raft.class);
 
-    // Configuration Parameters
-    private static final int MIN_ELECTION_TIMEOUT = 300;
-    private static final int MAX_ELECTION_TIMEOUT = 600;
-    private static final int HEARTBEAT_INTERVAL = 100;
-    private static final int QUORUM_FACTOR = 2;
+    private enum State {
+        FOLLOWER, CANDIDATE, LEADER
+    }
 
-    // State Variables
-    private RaftStates state = RaftStates.FOLLOWER;
+    private static final List<String> NODES = Arrays.asList(
+            "node1:8105", "node2:8106", "node3:8107", "node4:8108", "node5:8109"
+    );
+
+    private final String selfAddress = Main.HOST;
+    private final int selfPort = Main.PORT;
+
+    private State currentState = State.FOLLOWER;
     private int currentTerm = 0;
     private String votedFor = null;
-    private Set<String> votesReceived = new HashSet<>();
+    private String currentLeader = null;
 
-    private final NodeManager nodeManager;
-    private final UdpMessageSender sender;
-    private final ScheduledExecutorService electionExecutor = Executors.newSingleThreadScheduledExecutor();
+    private final Set<String> receivedVotes = ConcurrentHashMap.newKeySet();
+    private final Random random = new Random();
+    private long electionTimeout = generateElectionTimeout();
+    private long lastHeartbeatTime = System.currentTimeMillis();
 
-    public Raft(NodeManager nodeManager, UdpMessageSender sender) {
-        this.nodeManager = nodeManager;
-        this.sender = sender;
-        nodeManager.getNodes().removeIf(node -> node.hostname().equals(NodeManager.HOST) && node.port() == NodeManager.PORT);
+    private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
+    private final ExecutorService electionExecutor = Executors.newSingleThreadExecutor();
+
+    private final UdpListener listener;
+    private final UdpSender sender;
+    private final Gson gson = new Gson();
+
+    public Raft() {
+        this.listener = new UdpListener(selfPort, this::processMessage);
+        this.sender = new UdpSender();
 
         start();
     }
 
-    public void start() {
-        logger.info("Raft initialization. Total peers: {}", nodeManager.getNodes().size());
-        becomeFollower(1);
+    private void start() {
+        executorService.scheduleAtFixedRate(this::checkElectionTimeout, 50, 50, TimeUnit.MILLISECONDS);
+        executorService.scheduleAtFixedRate(this::sendHeartbeats, 100, 100, TimeUnit.MILLISECONDS);
+
+        listener.startListening();
+        logger.info("Node {} started", selfAddress);
     }
 
-    private void becomeFollower(int term) {
-        if (term > currentTerm) {
-            state = RaftStates.FOLLOWER;
-            currentTerm = term;
-            votedFor = null;
-            votesReceived.clear();
-            logger.debug("Transitioned to FOLLOWER. Term: {}", term);
+    private long generateElectionTimeout() {
+        return System.currentTimeMillis() + 150 + random.nextInt(150);
+    }
+
+    private void checkElectionTimeout() {
+        long currentTime = System.currentTimeMillis();
+
+        if (currentState != State.LEADER && currentTime > electionTimeout) {
+            startElection();
         }
-        scheduleElectionTimeout();
     }
 
-    private void becomeCandidate() {
-        state = RaftStates.CANDIDATE;
+    private void startElection() {
+        currentState = State.CANDIDATE;
         currentTerm++;
-        votedFor = NodeManager.HOST + ":" + NodeManager.PORT;
-        votesReceived = new HashSet<>(Set.of(votedFor)); // Self vote
+        votedFor = selfAddress;
+        receivedVotes.clear();
+        receivedVotes.add(selfAddress);
+        electionTimeout = generateElectionTimeout();
 
-      //  logger.info("Starting election in Term {}. Attempting to collect votes.", currentTerm);
-        sendVoteRequests();
+        logger.info("Node {} starting election for term {}", selfAddress, currentTerm);
+
+        electionExecutor.submit(() -> {
+            for (String node : NODES) {
+                if (!node.equals(selfAddress)) {
+                    UdpListener.JsonMessage message = new UdpListener.JsonMessage("VOTE_REQUEST", currentTerm, selfAddress + ":" + selfPort, null);
+                    sendMessage(node, message);
+                }
+            }
+
+            try {
+                Thread.sleep(100);
+                tallyVotes();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
+    }
+
+    private void tallyVotes() {
+        long requiredVotes = (NODES.size() / 2) + 1;
+
+        if (receivedVotes.size() >= requiredVotes) {
+            becomeLeader();
+        } else {
+            currentState = State.FOLLOWER;
+            votedFor = null;
+            electionTimeout = generateElectionTimeout();
+            logger.info("Node {} failed to become leader for term {}", selfAddress, currentTerm);
+        }
     }
 
     private void becomeLeader() {
-        if (state == RaftStates.CANDIDATE &&
-                votesReceived.size() >= (nodeManager.getNodes().size() / QUORUM_FACTOR + 1)) {
-            state = RaftStates.LEADER;
-            logger.info("LEADER ELECTION SUCCESS: Becoming LEADER in Term {}", currentTerm);
-            votesReceived.clear();
+        if (currentState == State.CANDIDATE) {
+            currentState = State.LEADER;
+            currentLeader = selfAddress;
+            logger.info("Node {} became leader for term {}", selfAddress, currentTerm);
             sendHeartbeats();
+            notifyManager();
         }
     }
 
-    private void sendVoteRequests() {
-        String voteRequest = String.format("REQUEST_VOTE|%d|%s:%d",
-                currentTerm, NodeManager.HOST, NodeManager.PORT);
+    private void notifyManager() {
+        try {
+            URL url = new URL("http://manager:8081/update_leader");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setDoOutput(true);
 
-        for (NodeInfo peer : nodeManager.getNodes()) {
-            sender.sendMessage(peer, voteRequest);
+            String jsonBody = String.format(
+                    "{\"leaderHost\": \"%s\", \"leaderPort\": %d}",
+                    selfAddress.split(":")[0], selfPort
+            );
+
+            try (OutputStream os = connection.getOutputStream()) {
+                os.write(jsonBody.getBytes(StandardCharsets.UTF_8));
+                os.flush();
+            }
+
+            int responseCode = connection.getResponseCode();
+        } catch (Exception e) {
+            logger.error("Failed to notify manager of leadership: {}", e.getMessage(), e);
         }
     }
 
     private void sendHeartbeats() {
-        if (state != RaftStates.LEADER) return;
-
-        String heartbeat = String.format("HEARTBEAT|%d|%s:%d",
-                currentTerm, NodeManager.HOST, NodeManager.PORT);
-
-        for (NodeInfo peer : nodeManager.getNodes()) {
-            sender.sendMessage(peer, heartbeat);
+        if (currentState == State.LEADER) {
+            for (String node : NODES) {
+                if (!node.equals(selfAddress)) {
+                    UdpListener.JsonMessage message = new UdpListener.JsonMessage("HEARTBEAT", currentTerm, selfAddress, null);
+                    sendMessage(node, message);
+                }
+            }
         }
-
-        // Reschedule heartbeats
-        electionExecutor.schedule(this::sendHeartbeats, HEARTBEAT_INTERVAL, TimeUnit.MILLISECONDS);
     }
 
-    private void scheduleElectionTimeout() {
-        int timeout = MIN_ELECTION_TIMEOUT + RANDOM.nextInt(MAX_ELECTION_TIMEOUT - MIN_ELECTION_TIMEOUT);
-
-        electionExecutor.schedule(() -> {
-            if (state != RaftStates.LEADER) {
-                logger.debug("Election timeout triggered. Starting new election.");
-                becomeCandidate();
-            }
-        }, timeout, TimeUnit.MILLISECONDS);
-    }
-
-    public void processMessage(String message) {
-        String[] parts = message.split("\\|");
-        if (parts.length < 3) return;
-
+    private void processMessage(UdpListener.JsonMessage message) {
         try {
-            String type = parts[0];
-            int messageTerm = Integer.parseInt(parts[1]);
-            String sender = parts[2];
-
-            // Term comparison and potential state change
-            if (messageTerm > currentTerm) {
-                becomeFollower(messageTerm);
-            }
-
-            switch (type) {
-                case "REQUEST_VOTE":
-                    handleRequestVote(messageTerm, sender);
+            switch (message.type) {
+                case "VOTE_REQUEST":
+                    handleVoteRequest(message.term, message.sender);
+                    break;
+                case "VOTE_RESPONSE":
+                    handleVoteResponse(message.term, message.sender, message.additionalData);
                     break;
                 case "HEARTBEAT":
-                    handleHeartbeat(messageTerm, sender);
-                    break;
-                case "VOTE_GRANTED":
-                    handleVoteGranted(messageTerm, sender);
+                    handleHeartbeat(message.term, message.sender);
                     break;
             }
-        } catch (NumberFormatException e) {
-            logger.error("Error processing message: {}", message);
+        } catch (Exception e) {
+            logger.error("Error processing message: {}", gson.toJson(message), e);
         }
     }
 
-    private void handleRequestVote(int term, String candidate) {
+    private void handleVoteRequest(int term, String candidate) {
         boolean voteGranted = false;
 
-        if (term >= currentTerm &&
-                (votedFor == null || votedFor.equals(candidate))) {
-            voteGranted = true;
-            votedFor = candidate;
+        if (term > currentTerm) {
             currentTerm = term;
-            scheduleElectionTimeout();
+            currentState = State.FOLLOWER;
+            votedFor = null;
         }
 
-        String response = String.format("VOTE_GRANTED|%d|%s", term, voteGranted);
-        sender.sendMessage(NodeInfo.fromString(candidate), response);
+        if (term == currentTerm && (votedFor == null || votedFor.equals(candidate)) && currentState != State.LEADER) {
+            voteGranted = true;
+            votedFor = candidate;
+            electionTimeout = generateElectionTimeout();
+        }
+
+        UdpListener.JsonMessage response = new UdpListener.JsonMessage("VOTE_RESPONSE", term, selfAddress + ":" + selfPort, voteGranted ? "GRANTED" : "REJECTED");
+        sendMessage(candidate, response);
+    }
+
+    private void handleVoteResponse(int term, String sender, String response) {
+        if (currentState != State.CANDIDATE || term != currentTerm) return;
+
+        if ("GRANTED".equals(response)) {
+            receivedVotes.add(sender);
+        }
     }
 
     private void handleHeartbeat(int term, String leader) {
         if (term >= currentTerm) {
-            scheduleElectionTimeout();
-            becomeFollower(term);
+            currentTerm = term;
+            currentState = State.FOLLOWER;
+            currentLeader = leader;
+            lastHeartbeatTime = System.currentTimeMillis();
+            electionTimeout = generateElectionTimeout();
         }
     }
 
-    private void handleVoteGranted(int term, String candidate) {
-        if (state == RaftStates.CANDIDATE && term == currentTerm) {
-            votesReceived.add(candidate);
-            logger.debug("Vote received from {}. Total votes: {}/{}",
-                    candidate, votesReceived.size(), (nodeManager.getNodes().size() / QUORUM_FACTOR + 1));
-
-            becomeLeader();
+    private void sendMessage(String address, UdpListener.JsonMessage message) {
+        try {
+            String[] parts = address.split(":");
+            if (parts.length != 2) {
+                logger.error("Invalid address format: {}", address);
+                return;
+            }
+            String host = parts[0];
+            int port = Integer.parseInt(parts[1]);
+            sender.sendMessage(host, port, message);
+        } catch (NumberFormatException e) {
+            logger.error("Invalid port in address: {}", address, e);
+        } catch (Exception e) {
+            logger.error("Error sending message to {}: {}", address, e.getMessage(), e);
         }
-    }
-
-    public void shutdown() {
-        electionExecutor.shutdownNow();
     }
 }
