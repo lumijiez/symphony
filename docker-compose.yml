@@ -23,14 +23,6 @@ services:
     depends_on:
       - rabbitmq
 
-  symphony-smtp:
-    container_name: smtp
-    build:
-      context: ./SymphonySMTP
-      dockerfile: Dockerfile
-    ports:
-      - "8090:8090"
-
   node1:
     container_name: node1
     build:
