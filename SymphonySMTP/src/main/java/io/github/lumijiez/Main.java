@@ -4,14 +4,27 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class Main {
+    public static Logger logger = LogManager.getLogger(Main.class);
     public static void main(String[] args) {
-        Logger logger = LogManager.getLogger(Main.class);
-        logger.info("SMTP server started");
+        try {
+            SMTPSender emailSender = new SMTPSender(
+                    "smtp.gmail.com",
+                    587,
+                    "danthevip@gmail.com",
+                    "",
+                    false
+            );
 
-        String host = "smtp.gmail.com";
-        String port = "587";
-        String fromEmail = "your-email@gmail.com";
-        String fromPassword = "your-email-password";
-        String toEmail = "daniil.schipschi@isa.utm.md";
+            emailSender.sendEmail(
+                    "danthevip@gmail.com",
+                    "daniil.schipschi@isa.utm.md",
+                    "Test",
+                    "Test test test. Hehehehehehehehehehehehehehehehehehe!"
+            );
+
+            logger.info("Email sent successfully!");
+        } catch (Exception e) {
+            logger.error("Error sending email: {}", e.getMessage());
+        }
     }
 }

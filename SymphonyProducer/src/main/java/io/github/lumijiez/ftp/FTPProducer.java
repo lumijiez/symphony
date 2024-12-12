@@ -1,7 +1,8 @@
-package io.github.lumijiez;
+package io.github.lumijiez.ftp;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import io.github.lumijiez.Main;
 import org.apache.commons.net.ftp.FTPClient;
 
 import java.io.ByteArrayInputStream;
@@ -18,7 +19,7 @@ public class FTPProducer {
     String ftpPass = "symphony";
     String ftpDir = "/";
 
-    FTPProducer() {
+    public FTPProducer() {
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override

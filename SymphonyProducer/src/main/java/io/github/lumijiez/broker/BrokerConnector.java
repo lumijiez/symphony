@@ -1,4 +1,4 @@
-package io.github.lumijiez;
+package io.github.lumijiez.broker;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -13,6 +13,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import io.github.lumijiez.Main;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
