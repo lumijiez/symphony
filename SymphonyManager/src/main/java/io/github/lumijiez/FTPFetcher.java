@@ -30,10 +30,10 @@ public class FTPFetcher {
 
         try {
             ftpClient.connect(ftpServer, ftpPort);
-            ftpClient.setControlKeepAliveTimeout(300);
+//            ftpClient.setControlKeepAliveTimeout(300);
             boolean login = ftpClient.login(ftpUser, ftpPass);
             if (!login) {
-                System.out.println("FTP login failed.");
+                Main.logger.error("FTP login failed.");
                 return;
             }
 
@@ -42,7 +42,7 @@ public class FTPFetcher {
 
             String[] fileNames = ftpClient.listNames();
             if (fileNames == null || fileNames.length == 0) {
-                System.out.println("No files found in the directory.");
+                Main.logger.error("No files found in the directory.");
                 return;
             }
 
@@ -51,21 +51,21 @@ public class FTPFetcher {
                 try (FileOutputStream fos = new FileOutputStream(localFile)) {
                     boolean success = ftpClient.retrieveFile(fileName, fos);
                     if (success) {
-                        System.out.println("File downloaded: " + localFile.getName());
+                        Main.logger.info("File downloaded: {}", localFile.getName());
                     } else {
-                        System.out.println("Failed to download the file: " + fileName);
+                        Main.logger.error("Failed to download the file: {}", fileName);
                     }
                 }
 
                 boolean deleted = ftpClient.deleteFile(fileName);
                 if (deleted) {
-                    System.out.println("File deleted from FTP server: " + fileName);
+                    Main.logger.info("File deleted from FTP server: {}", fileName);
                 } else {
-                    System.out.println("Failed to delete the file from FTP server: " + fileName);
+                    Main.logger.error("Failed to delete the file from FTP server: {}", fileName);
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Main.logger.error(e.getMessage());
         } finally {
             try {
                 if (ftpClient.isConnected()) {
@@ -73,7 +73,7 @@ public class FTPFetcher {
                     ftpClient.disconnect();
                 }
             } catch (IOException ex) {
-                ex.printStackTrace();
+                Main.logger.error(ex.getMessage());
             }
         }
     }

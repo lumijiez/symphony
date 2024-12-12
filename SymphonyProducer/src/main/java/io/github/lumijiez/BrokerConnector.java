@@ -93,6 +93,7 @@ public class BrokerConnector {
             }
             return hexString.toString();
         } catch (NoSuchAlgorithmException e) {
+            Main.logger.error(e.getMessage());
             throw new RuntimeException("SHA-256 algorithm not available", e);
         }
     }

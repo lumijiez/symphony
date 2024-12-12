@@ -11,21 +11,21 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class FTPClientConnector {
+public class FTPProducer {
     String ftpServer = "ftp_server";
     int ftpPort = 21;
     String ftpUser = "symphony";
     String ftpPass = "symphony";
     String ftpDir = "/";
 
-    FTPClientConnector() {
+    FTPProducer() {
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 uploadRandomJsonToFtp(ftpServer, ftpPort, ftpUser, ftpPass, ftpDir);
             }
-        }, 0, 30000);
+        }, 0, 5000);
     }
 
     public static void uploadRandomJsonToFtp(String ftpServer, int ftpPort, String ftpUser, String ftpPass, String ftpDir) {
@@ -40,7 +40,7 @@ public class FTPClientConnector {
             ftpClient.connect(ftpServer, ftpPort);
             boolean login = ftpClient.login(ftpUser, ftpPass);
             if (!login) {
-                System.out.println("FTP login failed.");
+                Main.logger.error("FTP login failed.");
                 return;
             }
 
@@ -49,11 +49,11 @@ public class FTPClientConnector {
 
             String subDir = "uploads";
             if (!ftpClient.changeWorkingDirectory(subDir)) {
-                System.out.println("Subdirectory does not exist. Creating: " + subDir);
+                Main.logger.info("Subdirectory does not exist. Creating: {}", subDir);
                 boolean dirCreated = ftpClient.makeDirectory(subDir);
                 if (!dirCreated) {
-                    System.out.println("Failed to create subdirectory: " + subDir);
-                    System.out.println("Server reply: " + ftpClient.getReplyString());
+                    Main.logger.error("Failed to create subdirectory: {}", subDir);
+                    Main.logger.error("Server reply: {}", ftpClient.getReplyString());
                     return;
                 }
                 ftpClient.changeWorkingDirectory(subDir);
@@ -62,16 +62,16 @@ public class FTPClientConnector {
             String filename = "file_" + System.currentTimeMillis() + ".json";
             boolean uploaded = ftpClient.storeFile(filename, inputStream);
             if (uploaded) {
-                System.out.println("Successfully uploaded: " + filename);
+                Main.logger.info("Successfully uploaded: {}", filename);
             } else {
-                System.out.println("Failed to upload: " + filename);
-                System.out.println("Server reply: " + ftpClient.getReplyString());
+                Main.logger.error("Failed to upload: {}", filename);
+                Main.logger.error("Server reply: {}", ftpClient.getReplyString());
             }
 
             ftpClient.logout();
         } catch (IOException e) {
-            System.out.println("Error during FTP operation: " + e.getMessage());
-            e.printStackTrace();
+            Main.logger.error("Error during FTP operation: {}", e.getMessage());
+            Main.logger.error(e.getMessage());
         } finally {
             try {
                 inputStream.close();
@@ -79,7 +79,7 @@ public class FTPClientConnector {
                     ftpClient.disconnect();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                Main.logger.error(e.getMessage());
             }
         }
     }
