@@ -1,4 +1,4 @@
-package io.github.lumijiez;
+package io.github.lumijiez.http;
 
 public class AddressHolder {
     private String host;

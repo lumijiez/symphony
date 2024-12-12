@@ -1,5 +1,6 @@
-package io.github.lumijiez;
+package io.github.lumijiez.ftp;
 
+import io.github.lumijiez.Main;
 import org.apache.commons.net.ftp.FTPClient;
 
 import java.io.File;

@@ -1,5 +1,6 @@
-package io.github.lumijiez;
+package io.github.lumijiez.http;
 
+import io.github.lumijiez.Main;
 import io.github.lumijiez.requests.UpdateLeaderRequest;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
