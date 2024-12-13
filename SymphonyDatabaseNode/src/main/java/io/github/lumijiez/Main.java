@@ -5,9 +5,14 @@ import io.github.lumijiez.data.entities.PushData;
 import io.github.lumijiez.raft.Raft;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
+import io.javalin.http.UploadedFile;
 import jakarta.persistence.EntityManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 public class Main {
     public static final String HOST = System.getenv().getOrDefault("HOSTNAME", "localhost");
@@ -31,6 +36,24 @@ public class Main {
         Javalin app = Javalin.create().start(HTTP_PORT);
 
         app.post("/push", Main::handlePush);
+
+        app.post("/upload", ctx -> {
+            String description = ctx.formParam("description");
+
+            UploadedFile uploadedFile = ctx.uploadedFile("file");
+
+            if (uploadedFile != null) {
+                Path destination = Path.of("uploads", uploadedFile.filename());
+                Files.createDirectories(destination.getParent());
+                Files.copy(uploadedFile.content(), destination, StandardCopyOption.REPLACE_EXISTING);
+
+                ctx.status(200).json("File uploaded successfully: " + uploadedFile.filename() + "\nDescription: " + description);
+                System.out.println("File uploaded successfully: " + uploadedFile.filename() + "\nDescription: " + description);
+            } else {
+                ctx.status(400).json("No file uploaded");
+                logger.error("No file uploaded");
+            }
+        });
 
         logger.info("HTTP server started on port {}", HTTP_PORT);
     }
